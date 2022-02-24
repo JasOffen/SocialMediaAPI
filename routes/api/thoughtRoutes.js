@@ -4,6 +4,7 @@ const {
     createThought,
     deleteThought,
     getThoughts,
+    updateThought,
   } = require('../../controllers/thought-controller');
 
 // Set up GET all and POST at /api/pizzas
@@ -16,7 +17,7 @@ router
 router
   .route('/:id')
   .get(getThoughtbyID)
-  .put()
+  .put(updateThought)
   .delete(deleteThought);
 
 module.exports = router;

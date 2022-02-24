@@ -1,4 +1,4 @@
-const { Thought, User } = require('../models');
+const { Thought, User, Reaction } = require('../models');
 
 const thoughtController = {
     getThoughtbyID({params},res){
@@ -31,10 +31,28 @@ const thoughtController = {
             })
     },
 
+    updateThought({params, body},res){
+        Thought.findByIdAndUpdate({_id: params.id}, body)
+            .then(dbThoughtData =>{
+                if(!dbThoughtData){
+                    res.status(404).json({message: 'No user found'});
+                    console.log('Not found')
+                    return;
+                }
+                res.json(dbThoughtData);
+                console.log(dbThoughtData)
+            })
+            .catch( err=>{
+                console.log(err)
+                res.status(400).json(err)
+            })
+    },
+
     createThought({params, body}, res){
         Thought.create(body)
-            .then(({_id}) =>{
+            .then(({_id}, dbThoughtData) =>{
                 User.findOneAndUpdate({_id: params.id}, {thoughts: _id})
+                res.status(200).json(dbThoughtData);
             })
             //.then(dbThoughtData => res.json(dbThoughtData))
             .catch(err => res.status(404).json(err))
