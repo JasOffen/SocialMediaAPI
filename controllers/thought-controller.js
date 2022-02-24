@@ -1,4 +1,4 @@
-const { Thought, User, Reaction } = require('../models');
+const { Thought, User} = require('../models');
 
 const thoughtController = {
     getThoughtbyID({params},res){
@@ -50,11 +50,16 @@ const thoughtController = {
 
     createThought({params, body}, res){
         Thought.create(body)
-            .then(({_id}, dbThoughtData) =>{
-                User.findOneAndUpdate({_id: params.id}, {thoughts: _id})
-                res.status(200).json(dbThoughtData);
+            .then(({_id}) =>{
+                return User.findOneAndUpdate({_id: params.id}, {$push: {thoughts: _id}}, {new: true})
             })
-            //.then(dbThoughtData => res.json(dbThoughtData))
+            .then(dbUserData => {
+                if (!dbUserData) {
+                    res.status(404).json({message: 'No user found'});
+                    return;
+                }
+                res.json(dbUserData);
+            })
             .catch(err => res.status(404).json(err))
     },
 
@@ -69,6 +74,21 @@ const thoughtController = {
             })
             .catch(err => res.status(400).json(err))
     },
+
+    addReaction({params, body}, res){
+        Thought.findByIdAndUpdate({ _id: params.thoughtid },{ $push: { reaction: body } },{ new: true })
+        .then(dbThoughtData =>{
+            if (!dbThoughtData){
+                res.status(404).json({message: 'No post found'});
+                return;
+            }
+            res.json(dbThoughtData);
+        })
+        .catch( err =>{
+            console.log(err);
+            res.status(400).json(err)
+        })
+    }
 }
 
 module.exports = thoughtController
